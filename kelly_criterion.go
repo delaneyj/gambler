@@ -38,7 +38,14 @@ func KellyCriterion(bankRoll, minBet, betMultiple int, winProbability, payoutRat
 	g1 := p
 	g2 := math.Log(1 + bankRollPercentage)
 	gain := g1 + g2
-	growth := math.Exp(gain-loss) - 1
+	exp := math.Exp(gain - loss)
+	growth := exp - 1
 
-	return bet, growth / 100
+	return bet, growth
+}
+
+//CompoundGrowthRate x
+func CompoundGrowthRate(growthRate float64, bankRoll, iterations int) int {
+	c := float64(bankRoll) * math.Exp(growthRate*float64(iterations))
+	return int(math.Round(c))
 }
