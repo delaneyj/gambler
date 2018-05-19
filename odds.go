@@ -29,6 +29,11 @@ func AmericanToFractional(a int) big.Rat {
 	return f
 }
 
+//AmericanToImpliedOdds x
+func AmericanToImpliedOdds(a int) float64 {
+	return 1 / AmericanToDecimal(a)
+}
+
 //DecimalToAmerican x
 func DecimalToAmerican(d float64) int {
 	if d >= 2 {
@@ -44,6 +49,11 @@ func DecimalToFractional(d float64) big.Rat {
 	return r
 }
 
+//DecimalToImpliedOdds x
+func DecimalToImpliedOdds(d float64) float64 {
+	return 1 / d
+}
+
 //FractionalToDecimal x
 func FractionalToDecimal(f big.Rat) float64 {
 	x, _ := f.Float64()
@@ -57,4 +67,9 @@ func FractionalToAmerican(f big.Rat) int {
 		return int(x * 100)
 	}
 	return int(-100 / x)
+}
+
+//FractionalToImpliedOdds x
+func FractionalToImpliedOdds(f big.Rat) float64 {
+	return 1 / FractionalToDecimal(f)
 }
