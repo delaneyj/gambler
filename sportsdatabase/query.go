@@ -25,6 +25,11 @@ type SQDLResponse struct {
 	} `json:"groups"`
 }
 
+//HasRecords returns bool if response contains records
+func (response *SQDLResponse) HasRecords() bool {
+	return len(response.Groups) > 0
+}
+
 //QueryConfig x
 type QueryConfig struct {
 	APIKey                                      string
