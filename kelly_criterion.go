@@ -16,18 +16,21 @@ func KellyCriterion(bankRoll, minBet, betMultiple int, winProbability, payoutRat
 
 	betF := float64(bankRoll) * bankRollPercentage
 
+	maxWager := int(math.Round(float64(bankRoll) * maximumWagerRatio))
+	if maxWager < minBet && bankRollPercentage > 0 {
+		betF = float64(minBet)
+		bankRollPercentage = float64(minBet) / float64(bankRoll)
+	} else if betF > float64(maxWager) {
+		betF = float64(maxWager)
+		bankRollPercentage = maximumWagerRatio
+	}
+
 	bm := float64(betMultiple)
 	interval := int(betF / bm)
 	bet := interval * betMultiple
 
 	if bet < minBet {
 		return 0, 0
-	}
-
-	maxWager := int(math.Round(float64(bankRoll) * maximumWagerRatio))
-	if bet > maxWager {
-		bet = maxWager
-		bankRollPercentage = maximumWagerRatio
 	}
 
 	bankLeft := 1 - bankRollPercentage

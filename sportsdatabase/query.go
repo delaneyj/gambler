@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strings"
@@ -25,9 +26,13 @@ type SQDLResponse struct {
 	} `json:"groups"`
 }
 
-//HasRecords returns bool if response contains records
-func (response *SQDLResponse) HasRecords() bool {
-	return len(response.Groups) > 0
+//RecordsCount returns bool if response contains records
+func (response *SQDLResponse) RecordsCount() int {
+	recordsCount := 0
+	if len(response.Groups) > 0 {
+		recordsCount = len(response.Groups[0].Columns[0])
+	}
+	return recordsCount
 }
 
 //QueryConfig x
@@ -92,12 +97,14 @@ func Query(qc QueryConfig) (*SQDLResponse, error) {
 	body = strings.Replace(body, `','`, `","`, -1)
 	body = strings.Replace(body, `,'`, `,"`, -1)
 	body = strings.Replace(body, `', '`, `","`, -1)
+	body = strings.Replace(body, `',`, `",`, -1)
 	b := []byte(body)
 
 	var sqdlResponse SQDLResponse
 	// ioutil.WriteFile("currentParsing.json", b, 0666)
 	err = json.Unmarshal(b, &sqdlResponse)
 	if err != nil {
+		ioutil.WriteFile("badjson.json", b, 0666)
 		return nil, errors.Wrap(err, "can't unmarshall SDQL json")
 	}
 
