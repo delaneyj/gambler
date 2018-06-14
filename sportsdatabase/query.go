@@ -14,7 +14,9 @@ import (
 )
 
 var (
-	httpClient = &http.Client{Timeout: 10 * time.Second}
+	httpClient = &http.Client{
+		Timeout: 60 * time.Second,
+	}
 )
 
 //SQDLResponse x
