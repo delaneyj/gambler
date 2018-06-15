@@ -8,8 +8,9 @@ import (
 //Returns the bet amount in wager units and expected growth rate
 func KellyCriterion(bankRoll, minBet, betMultiple int, winProbability, payoutRatio, maximumWagerRatio float64) (int, float64) {
 	p := winProbability
+	q := 1 - p
 	b := payoutRatio
-	bankRollPercentage := (p*b + p - 1) / b
+	bankRollPercentage := (b*p - q) / b
 	if bankRollPercentage < 0 || math.IsInf(bankRollPercentage, 0) {
 		return 0, 0
 	}
