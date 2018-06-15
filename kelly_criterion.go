@@ -10,7 +10,7 @@ func KellyCriterion(bankRoll, minBet, betMultiple int, winProbability, payoutRat
 	p := winProbability
 	b := payoutRatio
 	bankRollPercentage := (p*b + p - 1) / b
-	if bankRollPercentage < 0 {
+	if bankRollPercentage < 0 || math.IsInf(bankRollPercentage, 0) {
 		return 0, 0
 	}
 
