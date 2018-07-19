@@ -12,7 +12,6 @@ func TestKellyCriterion(t *testing.T) {
 	type args struct {
 		bankRoll       int
 		minBet         int
-		betMultiple    int
 		winProbability float64
 		payoutRatio    float64
 		maxWagerRatio  float64
@@ -31,14 +30,13 @@ func TestKellyCriterion(t *testing.T) {
 				payoutRatio:    2,
 				bankRoll:       1000,
 				winProbability: 0.6,
-				betMultiple:    1,
 				minBet:         1,
 				maxWagerRatio:  0.5,
 			},
 			expected:           399,
-			growthRate:         1.07953016734645361,
-			bankRollPercentage: 0.39999999999999997,
-			isMaxBet:           false,
+			growthRate:         1.0794294597813834,
+			bankRollPercentage: 0.399,
+			isMaxBet:           true,
 		},
 		{
 			name: "basic",
@@ -46,13 +44,12 @@ func TestKellyCriterion(t *testing.T) {
 				payoutRatio:    7.0 / 4.0,
 				bankRoll:       100000,
 				winProbability: 0.4,
-				betMultiple:    100,
 				minBet:         1000,
 				maxWagerRatio:  0.025,
 			},
-			expected:           2500,
-			growthRate:         0.5060674679348933,
-			bankRollPercentage: 0.025,
+			expected:           5714,
+			growthRate:         0.5223644213400322,
+			bankRollPercentage: 0.05714,
 			isMaxBet:           true,
 		},
 		{
@@ -61,7 +58,6 @@ func TestKellyCriterion(t *testing.T) {
 				payoutRatio:    4.0 / 7.0,
 				bankRoll:       100000,
 				winProbability: 0.4,
-				betMultiple:    100,
 				minBet:         1000,
 				maxWagerRatio:  0.025,
 			},
@@ -76,23 +72,26 @@ func TestKellyCriterion(t *testing.T) {
 				payoutRatio:    1.55,
 				bankRoll:       123400,
 				winProbability: 0.4,
-				betMultiple:    100,
 				minBet:         1000,
 				maxWagerRatio:  0.025,
 			},
-			expected:           1500,
-			growthRate:         0.4993450375407944,
-			bankRollPercentage: 0.012903225806451696,
-			isMaxBet:           false,
+			expected:           1592,
+			growthRate:         0.49934384784920227,
+			bankRollPercentage: 0.012901134521880065,
+			isMaxBet:           true,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			ki := KellyCriterion(
-				tt.args.bankRoll, tt.args.minBet,
-				tt.args.betMultiple, tt.args.winProbability,
-				tt.args.payoutRatio, tt.args.maxWagerRatio, 1)
+			ki := KellyCriterion(KellyArgs{
+				Bankroll:          tt.args.bankRoll,
+				MinWagerAllowed:   tt.args.minBet,
+				WinProbability:    tt.args.winProbability,
+				PayoutRatio:       tt.args.payoutRatio,
+				MaximumWagerRatio: tt.args.maxWagerRatio,
+				KellyRatio:        1,
+			})
 			assert.Equal(t, tt.expected, ki.BetAmount, tt.name)
 			assert.Equal(t, tt.growthRate, ki.GrowthRate, tt.name)
 			assert.Equal(t, tt.bankRollPercentage, ki.BankRollPercentage, tt.name)

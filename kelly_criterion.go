@@ -12,36 +12,48 @@ type KellyInfo struct {
 	IsMaxBet           bool    `json:"is_max_bet,omitempty"`
 }
 
+//KellyArgs x
+type KellyArgs struct {
+	Bankroll          int
+	MinWagerAllowed   int
+	MaxWagerAllowed   int
+	WinProbability    float64
+	PayoutRatio       float64
+	MaximumWagerRatio float64
+	KellyRatio        float64
+}
+
 //KellyCriterion a payout of 1:1 would be 1, 3:2 would be 1.5.
 //Returns the bet amount in wager units and expected growth rate
-func KellyCriterion(bankRoll, minBet, betMultiple int, winProbability, payoutRatio, maximumWagerRatio, kellyRatio float64) KellyInfo {
-	p := winProbability
+func KellyCriterion(args KellyArgs) KellyInfo {
+	p := args.WinProbability
 	q := 1 - p
-	b := payoutRatio
+	b := args.PayoutRatio
 	bankRollPercentage := (b*p - q) / b
 	if bankRollPercentage < 0 || math.IsInf(bankRollPercentage, 0) {
 		return KellyInfo{}
 	}
-	bankRollPercentage /= kellyRatio
+	bankRollPercentage /= args.KellyRatio
 
-	betF := float64(bankRoll) * bankRollPercentage
+	bankrollF := float64(args.Bankroll)
+	betF := float64(args.Bankroll) * bankRollPercentage
+	bet := int(math.Floor(betF))
 
-	maxWager := int(math.Round(float64(bankRoll) * maximumWagerRatio))
-	if maxWager < minBet && bankRollPercentage > 0 {
-		betF = float64(minBet)
-		bankRollPercentage = float64(minBet) / float64(bankRoll)
-	} else if betF > float64(maxWager) {
-		betF = float64(maxWager)
-		bankRollPercentage = maximumWagerRatio
-	}
-
-	bm := float64(betMultiple)
-	interval := int(betF / bm)
-	bet := interval * betMultiple
-
-	if bet < minBet {
+	maxWager := int(math.Round(bankrollF * args.MaximumWagerRatio))
+	if maxWager < args.MinWagerAllowed || bet < args.MinWagerAllowed {
 		return KellyInfo{}
 	}
+
+	betF = float64(bet)
+	bet = int(
+		math.Min(
+			math.Min(
+				betF, float64(maxWager),
+			),
+			float64(args.MaxWagerAllowed),
+		),
+	)
+	bankRollPercentage = betF / bankrollF
 
 	bankLeft := 1 - bankRollPercentage
 	l1 := (1 - p)
@@ -55,10 +67,10 @@ func KellyCriterion(bankRoll, minBet, betMultiple int, winProbability, payoutRat
 	growth := exp - 1
 
 	ki := KellyInfo{
-		BetAmount:          bet,
+		BetAmount:          int(betF),
 		GrowthRate:         growth,
 		BankRollPercentage: bankRollPercentage,
-		IsMaxBet:           bet == maxWager,
+		IsMaxBet:           bet == maxWager || bet == args.MaxWagerAllowed,
 	}
 	return ki
 }
