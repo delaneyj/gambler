@@ -18,6 +18,9 @@ func AmericanToDecimal(a int) float64 {
 //AmericanToFractional x
 func AmericanToFractional(a int) big.Rat {
 	f := big.Rat{}
+	if a == 0 {
+		return f
+	}
 	ai := big.NewInt(int64(a))
 	i := big.NewInt(100)
 	if a > 0 {
@@ -31,6 +34,9 @@ func AmericanToFractional(a int) big.Rat {
 
 //AmericanToImpliedOdds x
 func AmericanToImpliedOdds(a int) float64 {
+	if a == 0 {
+		return 0
+	}
 	return 1 / AmericanToDecimal(a)
 }
 

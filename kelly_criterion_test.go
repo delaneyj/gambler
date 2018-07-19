@@ -18,10 +18,12 @@ func TestKellyCriterion(t *testing.T) {
 		maxWagerRatio  float64
 	}
 	tests := []struct {
-		name       string
-		args       args
-		expected   int
-		growthRate float64
+		name               string
+		args               args
+		expected           int
+		growthRate         float64
+		bankRollPercentage float64
+		isMaxBet           bool
 	}{
 		{
 			name: "growthExample",
@@ -33,8 +35,10 @@ func TestKellyCriterion(t *testing.T) {
 				minBet:         1,
 				maxWagerRatio:  0.5,
 			},
-			expected:   399,
-			growthRate: 1.07953016734645361,
+			expected:           399,
+			growthRate:         1.07953016734645361,
+			bankRollPercentage: 0.39999999999999997,
+			isMaxBet:           false,
 		},
 		{
 			name: "basic",
@@ -46,8 +50,10 @@ func TestKellyCriterion(t *testing.T) {
 				minBet:         1000,
 				maxWagerRatio:  0.025,
 			},
-			expected:   2500,
-			growthRate: 0.5060674679348933,
+			expected:           2500,
+			growthRate:         0.5060674679348933,
+			bankRollPercentage: 0.025,
+			isMaxBet:           true,
 		},
 		{
 			name: "bad",
@@ -59,8 +65,10 @@ func TestKellyCriterion(t *testing.T) {
 				minBet:         1000,
 				maxWagerRatio:  0.025,
 			},
-			expected:   0,
-			growthRate: 0,
+			expected:           0,
+			growthRate:         0,
+			bankRollPercentage: 0,
+			isMaxBet:           false,
 		},
 		{
 			name: "close",
@@ -72,19 +80,23 @@ func TestKellyCriterion(t *testing.T) {
 				minBet:         1000,
 				maxWagerRatio:  0.025,
 			},
-			expected:   1500,
-			growthRate: 0.4993450375407944,
+			expected:           1500,
+			growthRate:         0.4993450375407944,
+			bankRollPercentage: 0.012903225806451696,
+			isMaxBet:           false,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			actual, growthRate := KellyCriterion(
+			ki := KellyCriterion(
 				tt.args.bankRoll, tt.args.minBet,
 				tt.args.betMultiple, tt.args.winProbability,
-				tt.args.payoutRatio, tt.args.maxWagerRatio)
-			assert.Equal(t, tt.expected, actual, tt.name)
-			assert.Equal(t, tt.growthRate, growthRate, tt.name)
+				tt.args.payoutRatio, tt.args.maxWagerRatio, 1)
+			assert.Equal(t, tt.expected, ki.BetAmount, tt.name)
+			assert.Equal(t, tt.growthRate, ki.GrowthRate, tt.name)
+			assert.Equal(t, tt.bankRollPercentage, ki.BankRollPercentage, tt.name)
+			assert.Equal(t, tt.isMaxBet, ki.IsMaxBet, tt.name)
 		})
 	}
 }

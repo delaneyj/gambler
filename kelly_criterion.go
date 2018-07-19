@@ -4,16 +4,25 @@ import (
 	"math"
 )
 
+//KellyInfo x
+type KellyInfo struct {
+	BetAmount          int     `json:"bet_amount,omitempty"`
+	GrowthRate         float64 `json:"growth_rate,omitempty"`
+	BankRollPercentage float64 `json:"bank_roll_percentage,omitempty"`
+	IsMaxBet           bool    `json:"is_max_bet,omitempty"`
+}
+
 //KellyCriterion a payout of 1:1 would be 1, 3:2 would be 1.5.
 //Returns the bet amount in wager units and expected growth rate
-func KellyCriterion(bankRoll, minBet, betMultiple int, winProbability, payoutRatio, maximumWagerRatio float64) (int, float64) {
+func KellyCriterion(bankRoll, minBet, betMultiple int, winProbability, payoutRatio, maximumWagerRatio, kellyRatio float64) KellyInfo {
 	p := winProbability
 	q := 1 - p
 	b := payoutRatio
 	bankRollPercentage := (b*p - q) / b
 	if bankRollPercentage < 0 || math.IsInf(bankRollPercentage, 0) {
-		return 0, 0
+		return KellyInfo{}
 	}
+	bankRollPercentage /= kellyRatio
 
 	betF := float64(bankRoll) * bankRollPercentage
 
@@ -31,7 +40,7 @@ func KellyCriterion(bankRoll, minBet, betMultiple int, winProbability, payoutRat
 	bet := interval * betMultiple
 
 	if bet < minBet {
-		return 0, 0
+		return KellyInfo{}
 	}
 
 	bankLeft := 1 - bankRollPercentage
@@ -45,7 +54,13 @@ func KellyCriterion(bankRoll, minBet, betMultiple int, winProbability, payoutRat
 	exp := math.Exp(gain - loss)
 	growth := exp - 1
 
-	return bet, growth
+	ki := KellyInfo{
+		BetAmount:          bet,
+		GrowthRate:         growth,
+		BankRollPercentage: bankRollPercentage,
+		IsMaxBet:           bet == maxWager,
+	}
+	return ki
 }
 
 //CompoundGrowthRate x
