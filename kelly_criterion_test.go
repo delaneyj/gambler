@@ -85,12 +85,12 @@ func TestKellyCriterion(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			ki := KellyCriterion(KellyArgs{
-				Bankroll:          tt.args.bankRoll,
-				MinWagerAllowed:   tt.args.minBet,
-				WinProbability:    tt.args.winProbability,
-				PayoutRatio:       tt.args.payoutRatio,
-				MaximumWagerRatio: tt.args.maxWagerRatio,
-				KellyRatio:        1,
+				Bankroll:        tt.args.bankRoll,
+				MinWagerAllowed: tt.args.minBet,
+				WinProbability:  tt.args.winProbability,
+				PayoutRatio:     tt.args.payoutRatio,
+				MaxWagerRatio:   tt.args.maxWagerRatio,
+				KellyRatio:      1,
 			})
 			assert.Equal(t, tt.expected, ki.BetAmount, tt.name)
 			assert.Equal(t, tt.growthRate, ki.GrowthRate, tt.name)

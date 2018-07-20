@@ -14,13 +14,14 @@ type KellyInfo struct {
 
 //KellyArgs x
 type KellyArgs struct {
-	Bankroll          int
-	MinWagerAllowed   int
-	MaxWagerAllowed   int
-	WinProbability    float64
-	PayoutRatio       float64
-	MaximumWagerRatio float64
-	KellyRatio        float64
+	Bankroll        int
+	MinWagerAllowed int
+	MaxWagerAllowed int
+	WinProbability  float64
+	PayoutRatio     float64
+	MaxWagerRatio   float64
+	KellyRatio      float64
+	BetInterval     bool
 }
 
 //KellyCriterion a payout of 1:1 would be 1, 3:2 would be 1.5.
@@ -37,21 +38,29 @@ func KellyCriterion(args KellyArgs) KellyInfo {
 
 	bankrollF := float64(args.Bankroll)
 	betF := float64(args.Bankroll) * bankRollPercentage
+	if args.BetInterval {
+		l := math.Floor(math.Log10(betF)) - 1
+		betInterval := math.Pow(10, l)
+		divisor := math.Floor(betF / betInterval)
+		betF = divisor * betInterval
+	}
 	bet := int(math.Floor(betF))
 
-	maxWager := int(math.Round(bankrollF * args.MaximumWagerRatio))
+	maxWager := int(math.Round(bankrollF * args.MaxWagerRatio))
 	if maxWager < args.MinWagerAllowed || bet < args.MinWagerAllowed {
 		return KellyInfo{}
 	}
 
-	betF = float64(bet)
-	bet = int(
+	// if bet >= args.MaxWagerAllowed {
+	// 	runtime.Breakpoint()
+	// }
+
+	betF = math.Min(
 		math.Min(
-			math.Min(
-				betF, float64(maxWager),
-			),
-			float64(args.MaxWagerAllowed),
+			float64(bet),
+			float64(maxWager),
 		),
+		float64(args.MaxWagerAllowed),
 	)
 	bankRollPercentage = betF / bankrollF
 
@@ -68,7 +77,7 @@ func KellyCriterion(args KellyArgs) KellyInfo {
 
 	ki := KellyInfo{
 		BetAmount:          int(betF),
-		GrowthRate:         growth,
+		GrowthRate:         growth / 100,
 		BankRollPercentage: bankRollPercentage,
 		IsMaxBet:           bet == maxWager || bet == args.MaxWagerAllowed,
 	}
