@@ -38,16 +38,9 @@ func KellyCriterion(args KellyArgs) KellyInfo {
 
 	bankrollF := float64(args.Bankroll)
 	betF := float64(args.Bankroll) * bankRollPercentage
-	if args.BetInterval {
-		l := math.Floor(math.Log10(betF)) - 1
-		betInterval := math.Pow(10, l)
-		divisor := math.Floor(betF / betInterval)
-		betF = divisor * betInterval
-	}
-	bet := int(math.Floor(betF))
 
 	maxWager := int(math.Round(bankrollF * args.MaxWagerRatio))
-	if maxWager < args.MinWagerAllowed || bet < args.MinWagerAllowed {
+	if maxWager < args.MinWagerAllowed || betF < float64(args.MinWagerAllowed) {
 		return KellyInfo{}
 	}
 
@@ -57,11 +50,18 @@ func KellyCriterion(args KellyArgs) KellyInfo {
 
 	betF = math.Min(
 		math.Min(
-			float64(bet),
+			betF,
 			float64(maxWager),
 		),
 		float64(args.MaxWagerAllowed),
 	)
+	if args.BetInterval {
+		l := math.Floor(math.Log10(betF)) - 1
+		betInterval := math.Pow(10, l)
+		divisor := math.Floor(betF / betInterval)
+		betF = divisor * betInterval
+	}
+	bet := int(math.Floor(betF))
 	bankRollPercentage = betF / bankrollF
 
 	bankLeft := 1 - bankRollPercentage
